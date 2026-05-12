@@ -18,8 +18,12 @@ public class ParticipantRestController {
     ParticipantService participantService;
 
     @RequestMapping(value = "", method = RequestMethod.GET)
-    public ResponseEntity<?> getParticipants() {
-        Collection<Participant> participants = participantService.getAll();
+    public ResponseEntity<?> getParticipants(
+            @RequestParam(value = "sortBy", defaultValue = "") String sortBy,
+            @RequestParam(value = "sortOrder", defaultValue = "ASC") String sortOrder,
+            @RequestParam(value = "key", defaultValue = "") String key
+    ) {
+        Collection<Participant> participants = participantService.getAll(sortBy, sortOrder, key);
         return new ResponseEntity<Collection<Participant>>(participants, HttpStatus.OK);
     }
 
@@ -47,23 +51,23 @@ public class ParticipantRestController {
     public ResponseEntity<?> deleteParticipant(@PathVariable("id") String login) {
         Participant participant = participantService.findByLogin(login);
         if (participant == null) {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-
         participantService.delete(participant);
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<Participant>(HttpStatus.NO_CONTENT);
     }
 
-    @RequestMapping(value = "/{login}", method = RequestMethod.PUT)
-    public ResponseEntity<?> getParticipant(@PathVariable("login") String login, @RequestBody Participant participant) {
-        Participant foundParticipant = participantService.findByLogin(login);
-        if (foundParticipant == null) {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+    @RequestMapping(value = "/{id}", method = RequestMethod.PUT)
+    public ResponseEntity<?> updateParticipant(@PathVariable("id") String login, @RequestBody Participant updatedParticipant) {
+        Participant participant = participantService.findByLogin(login);
+        if (participant == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
-        foundParticipant.setPassword(participant.getPassword());
-        participantService.update(foundParticipant);
-        return new ResponseEntity<Participant>(foundParticipant, HttpStatus.OK);
-    }
 
+        participant.setPassword(updatedParticipant.getPassword());
+        participantService.update(participant);
+
+        return new ResponseEntity<Participant>(HttpStatus.OK);
+    }
 
 }

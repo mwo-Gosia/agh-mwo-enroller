@@ -17,14 +17,23 @@ public class ParticipantService {
 		connector = DatabaseConnector.getInstance();
 	}
 
-	public Collection<Participant> getAll() {
-		String hql = "FROM Participant";
+	public Collection<Participant> getAll(String sortBy, String sortOrder, String key) {
+		String hql = "FROM Participant WHERE login LIKE :key";
+        if (sortBy.equals("login")) {
+            hql += " ORDER BY " + sortBy;
+            if (sortOrder.equalsIgnoreCase("DESC")) {
+                hql += " DESC";
+            } else {
+                hql += " ASC";
+            }
+        }
 		Query query = connector.getSession().createQuery(hql);
+        query.setParameter("key", "%" + key + "%");
 		return query.list();
 	}
 
     public Participant findByLogin(String login) {
-        return (Participant)connector.getSession().getSession().get(Participant.class, login);
+        return (Participant)connector.getSession().get(Participant.class, login);
     }
 
     public void add(Participant participant) {
